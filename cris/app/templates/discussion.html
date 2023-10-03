@@ -1,0 +1,257 @@
+{% extends 'myfirst.html' %}
+
+{% block title %} Thread {% endblock %}
+
+{% block css %}
+a {
+  text-decoration: none !important;
+  background-color: transparent
+}
+{% endblock %}
+{% block body %}
+<br>
+<div class="container-fluid mt-5">
+  <div class="row">
+    <div class="col-md-12">
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="media flex-wrap w-100 align-items-center"> <img src="/media/{{post.image}}"
+              class="d-block ui-w-40 rounded-circle" alt="" width="40px" height="40px">
+            <div class="media-body ml-3">
+              <a data-abc="true" href="/userprofile/{{post.user}}/" style="color: black">
+                <div><strong>{{post.user.get_full_name}}</strong></div>
+                <div class="text-muted small ml-3" style="margin-left: 0px !important;">@{{post.user}}</div>
+              </a>
+            </div>
+            <div class="text-muted small ml-3" style="text-transform: uppercase;">
+              <div><strong>{{post.timestamp}}</strong></div>
+            </div>
+          </div>
+          <br />
+          <div style="margin-left: 57px;">
+            <p>{{post.post_content}}</p>
+          </div>
+          <hr />
+          <div style="float: left;">
+            <a data-abc="true" style="color: white;" href="/save_post/{{post.id}}/">
+             <button type="submit" class="btn btn-primary savepost"></button> 
+            </a>
+          </div>
+          <div style="float: right !important;">
+            <button type="button" class="btn btn-primary" data-target="#reply" data-toggle="modal">Reply</button>
+            <button type="button" class="btn btn-primary" data-target="#edit" data-toggle="modal">Edit</button>
+            <button type="button" class="btn btn-primary" data-target="#delete" data-toggle="modal">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% for reply in replies %}
+  <div class="container-fluid mt-10">
+    <div class="row"
+      style="margin-right: -30px !important; right: -30px !important; margin-left: 30px !important; left: 30px !important">
+      <div class="col-md-12">
+        <div class="card mb-4">
+          <div class="card-body">
+            <div class="media flex-wrap w-100 align-items-center"> <img src="/media/{{reply.image}}"
+                class="d-block ui-w-40 rounded-circle" alt="" width="40px" height="40px">
+              <div class="media-body ml-3">
+                <a data-abc="true" href="{% url 'userprofile' reply.user %}" style="color: black">
+                  <div><strong>{{reply.user.get_full_name}}</strong></div>
+                  <div class="text-muted small ml-3" style="margin-left: 0px !important;">@{{reply.user}}</div>
+                </a>
+              </div>
+              <div class="text-muted small ml-3" style="text-transform: uppercase;">
+                <div><strong>{{reply.timestamp}}</strong></div>
+              </div>
+            </div>
+            <br />
+            <div style="margin-left: 57px;">
+              <p>{{reply.reply_content}}</p>
+            </div>
+            <hr />
+            <div style="float: right;">
+                <button type="button" class="btn btn-primary" data-target="#edit_{{reply.id}}" data-toggle="modal">Edit</button>
+                <button type="button" class="btn btn-primary" data-target="#delete_{{reply.id}}" data-toggle="modal">Delete</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="edit_{{reply.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        {% if user.is_authenticated %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Edit Reply</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="/edit_reply/{{reply.id}}/" method="POST">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="form-group">
+              <textarea class="form-control" id="content" name="content" rows="3">{{reply.reply_content}}</textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Edit</button>
+          </div>
+        </form>
+        {% else %}
+        <div class="modal-body">
+          <h4>Please Sign In to edit the reply</h4>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="delete_{{reply.id}}" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        {% if user.is_authenticated %}
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Delete Reply</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="/delete_reply/{{reply.id}}/" method="POST">
+          {% csrf_token %}
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="exampleFormControlTextarea1">Are you sure you want to delete the reply?</label>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Delete</button>
+          </div>
+        </form>
+        {% else %}
+        <div class="modal-body">
+          <h4>Please Sign In to delete the reply</h4>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="reply" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      {% if user.is_authenticated %}
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Post a reply</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="/discussion/{{post.id}}/" method="POST">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="exampleFormControlTextarea1">Post Your Reply Here</label>
+            <input type="hidden" name="post_id" value="{{post.id}}">
+            <textarea class="form-control" id="desc" name="desc" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Post</button>
+        </div>
+      </form>
+      {% else %}
+      <div class="modal-body">
+        <h4>Please Sign In first to post a reply</h4>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="edit" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      {% if user.is_authenticated %}
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Edit Post</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="/edit/{{post.id}}/" method="POST">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <textarea class="form-control" id="content" name="content" rows="3">{{post.post_content}}</textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Edit</button>
+        </div>
+      </form>
+      {% else %}
+      <div class="modal-body">
+        <h4>Please Sign In to edit the post</h4>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="delete" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      {% if user.is_authenticated %}
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Delete Post</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="/delete/{{post.id}}/" method="POST">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="exampleFormControlTextarea1">Are you sure you want to delete the post?</label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="submit" class="btn btn-primary">Delete</button>
+        </div>
+      </form>
+      {% else %}
+      <div class="modal-body">
+        <h4>Please Sign In to delete the post</h4>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block js %}
+<script>
+  {% if alert %}
+    alert("{{msg}}");
+    document.location = "/discussion/{{id}}";
+  {% elif dalert %}
+    alert("{{msg}}");
+    document.location = '/';
+  {% endif %}
+</script>
+{% endblock %}
